@@ -1,6 +1,6 @@
 /*
  * Created by Angel Leon (@gubatron), Alden Torres (aldenml)
- * Copyright (c) 2011-2014, FrostWire(R). All rights reserved.
+ * Copyright (c) 2011-2016, FrostWire(R). All rights reserved.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -217,7 +217,7 @@ public class StoragePreference extends DialogPreference {
 
     // TODO: Delete this ugly hack.
     public static boolean isLollipopWithNoSDCardHACK(Context context) {
-        return SystemUtils.hasLollipopOrNewer() && SystemUtils.getExternalFilesDirs(context).length==1;
+        return true;//SystemUtils.hasLollipopOrNewer() && SystemUtils.getExternalFilesDirs(context).length==1;
     }
 
     private static final class StorageMount {

@@ -1,5 +1,7 @@
 package com.frostwire.bittorrent;
 
+import com.frostwire.util.FileSystem;
+
 import java.io.File;
 
 /**
@@ -15,4 +17,5 @@ public final class BTContext {
     public int port1;
     public String iface;
     public boolean optimizeMemory;
+    public FileSystem fs;
 }

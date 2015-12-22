@@ -20,9 +20,11 @@ package com.frostwire.bittorrent;
 
 import com.frostwire.jlibtorrent.*;
 import com.frostwire.jlibtorrent.alerts.*;
-import com.frostwire.jlibtorrent.swig.*;
+import com.frostwire.jlibtorrent.swig.entry;
+import com.frostwire.jlibtorrent.swig.torrent_handle;
 import com.frostwire.logging.Logger;
 import com.frostwire.search.torrent.TorrentCrawledSearchResult;
+import com.frostwire.util.FileSystem;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 
@@ -696,7 +698,7 @@ public final class BTEngine {
             torrentFile = new File(ctx.torrentsDir, name + ".torrent");
             byte[] arr = ti.toEntry().bencode();
 
-            FileUtils.writeByteArrayToFile(torrentFile, arr);
+            ctx.fs.write(torrentFile, arr);
         } catch (Throwable e) {
             torrentFile = null;
             LOG.warn("Error saving torrent info to file", e);
@@ -806,12 +808,13 @@ public final class BTEngine {
             result = saveDir;
         }
 
-        if (result != null && !result.isDirectory() && !result.mkdirs()) {
+        FileSystem fs = ctx.fs;
+        if (result != null && !fs.isDirectory(result) && !fs.mkdirs(result)) {
             result = null;
             LOG.warn("Failed to create save dir to download");
         }
 
-        if (result != null && !result.canWrite()) {
+        if (result != null && !fs.canWrite(result)) {
             result = null;
             LOG.warn("Failed to setup save dir with write access");
         }
