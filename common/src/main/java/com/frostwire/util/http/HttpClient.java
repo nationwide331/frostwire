@@ -1,6 +1,6 @@
 /*
  * Created by Angel Leon (@gubatron), Alden Torres (aldenml)
- * Copyright (c) 2011-2015, FrostWire(R). All rights reserved.
+ * Copyright (c) 2011-2016, FrostWire(R). All rights reserved.
  
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,8 @@
  */
 
 package com.frostwire.util.http;
+
+import com.frostwire.util.FileSystem;
 
 import java.io.File;
 import java.io.IOException;
@@ -74,6 +76,8 @@ public interface HttpClient {
     void save(String url, File file, boolean resume, int timeout, String userAgent) throws IOException;
 
     void save(String url, File file, boolean resume, int timeout, String userAgent, String referrer) throws IOException;
+
+    void save(String url, File file, int timeout, String userAgent, String referrer, FileSystem fs) throws IOException;
 
     String post(String url, int timeout, String userAgent, Map<String, String> formData) throws IOException;
 

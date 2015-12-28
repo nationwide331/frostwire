@@ -21,7 +21,9 @@ package com.frostwire.util;
 import org.apache.commons.io.FileUtils;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 
 /**
  * This interface is to provide a limited functionality
@@ -60,6 +62,8 @@ public interface FileSystem {
     boolean mkdirs(File file);
 
     void write(File file, byte[] data) throws IOException;
+
+    OutputStream openWrite(File file) throws IOException;
 
     FileSystem DEFAULT = new FileSystem() {
 
@@ -133,6 +137,11 @@ public interface FileSystem {
         @Override
         public void write(File file, byte[] data) throws IOException {
             FileUtils.writeByteArrayToFile(file, data);
+        }
+
+        @Override
+        public OutputStream openWrite(File file) throws IOException {
+            return new FileOutputStream(file);
         }
     };
 }

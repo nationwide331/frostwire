@@ -145,7 +145,7 @@ public final class LollipopFileSystem implements FileSystem {
     public void write(File file, byte[] data) throws IOException {
         OutputStream out = null;
         try {
-            out = openStream(context, file);
+            out = openWrite(file);
             out.write(data);
             out.close(); // don't swallow close Exception if copy completes normally
         } finally {
@@ -153,7 +153,8 @@ public final class LollipopFileSystem implements FileSystem {
         }
     }
 
-    public static OutputStream openStream(Context context, File file) throws IOException {
+    @Override
+    public OutputStream openWrite(File file) throws IOException {
         File parent = file.getParentFile();
         if (parent == null) {
             throw new IOException("Can't create file: " + file);

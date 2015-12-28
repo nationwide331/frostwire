@@ -1,6 +1,6 @@
 /*
  * Created by Angel Leon (@gubatron), Alden Torres (aldenml)
- * Copyright (c) 2011-2015, FrostWire(R). All rights reserved.
+ * Copyright (c) 2011-2016, FrostWire(R). All rights reserved.
 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,10 +15,10 @@
  * limitations under the License.
  */
 
-
 package com.frostwire.util.http;
 
 import com.frostwire.logging.Logger;
+import com.frostwire.util.FileSystem;
 import com.frostwire.util.StringUtils;
 import com.frostwire.util.ThreadPool;
 import com.squareup.okhttp.*;
@@ -29,10 +29,7 @@ import okio.Okio;
 
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLSession;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.net.HttpURLConnection;
 import java.util.List;
 import java.util.Map;
@@ -107,6 +104,38 @@ public class OKHTTPClient extends AbstractHttpClient {
             fos = new FileOutputStream(file, false);
             rangeStart = -1;
         }
+
+        final OkHttpClient okHttpClient = newOkHttpClient();
+        final Request.Builder builder = prepareRequestBuilder(okHttpClient, url, timeout, userAgent, referrer, null);
+        addRangeHeader(rangeStart, -1, builder);
+        final Response response = getSyncResponse(okHttpClient, builder);
+        final Headers headers = response.headers();
+        onHeaders(headers);
+        final InputStream in = response.body().byteStream();
+
+        byte[] b = new byte[4096];
+        int n;
+        while (!canceled && (n = in.read(b, 0, b.length)) != -1) {
+            if (!canceled) {
+                fos.write(b, 0, n);
+                onData(b, 0, n);
+            }
+        }
+        closeQuietly(fos);
+        if (canceled) {
+            onCancel();
+        } else {
+            onComplete();
+        }
+    }
+
+    @Override
+    public void save(String url, File file, int timeout, String userAgent, String referrer, FileSystem fs) throws IOException {
+        OutputStream fos;
+        long rangeStart;
+        canceled = false;
+        fos = fs.openWrite(file);
+        rangeStart = -1;
 
         final OkHttpClient okHttpClient = newOkHttpClient();
         final Request.Builder builder = prepareRequestBuilder(okHttpClient, url, timeout, userAgent, referrer, null);

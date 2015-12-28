@@ -1,6 +1,6 @@
 /*
  * Created by Angel Leon (@gubatron), Alden Torres (aldenml)
- * Copyright (c) 2011-2015, FrostWire(R). All rights reserved.
+ * Copyright (c) 2011-2016, FrostWire(R). All rights reserved.
  
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@
 package com.frostwire.util.http;
 
 import com.frostwire.logging.Logger;
+import com.frostwire.util.FileSystem;
 
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.HttpsURLConnection;
@@ -106,6 +107,21 @@ public final class JdkHttpClient extends AbstractHttpClient {
                 fos = new FileOutputStream(file, false);
                 rangeStart = -1;
             }
+
+            get(url, fos, timeout, userAgent, null, referrer, rangeStart);
+        } finally {
+            closeQuietly(fos);
+        }
+    }
+
+    @Override
+    public void save(String url, File file, int timeout, String userAgent, String referrer, FileSystem fs) throws IOException {
+        OutputStream fos = null;
+        long rangeStart;
+
+        try {
+            fos = fs.openWrite(file);
+            rangeStart = -1;
 
             get(url, fos, timeout, userAgent, null, referrer, rangeStart);
         } finally {
