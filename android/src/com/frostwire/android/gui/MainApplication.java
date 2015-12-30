@@ -49,7 +49,7 @@ public class MainApplication extends Application {
 
     private static final Logger LOG = Logger.getLogger(MainApplication.class);
 
-    private static FileSystem FILE_SYSTEM = FileSystem.DEFAULT;
+    public static FileSystem FILE_SYSTEM = FileSystem.DEFAULT;
 
     @Override
     public void onCreate() {
@@ -151,6 +151,6 @@ public class MainApplication extends Application {
         }
 
         FILE_SYSTEM = new LollipopFileSystem(this);
-        LibTorrent.setPosixFileFunctions(new LollipopPosix(this, FILE_SYSTEM));
+        LibTorrent.setPosixFileFunctions(new LollipopPosix(this, (LollipopFileSystem) FILE_SYSTEM));
     }
 }

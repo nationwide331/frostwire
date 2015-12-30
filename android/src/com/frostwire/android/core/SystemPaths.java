@@ -19,6 +19,7 @@
 package com.frostwire.android.core;
 
 import android.content.Context;
+import android.os.Environment;
 
 import java.io.File;
 
@@ -64,7 +65,9 @@ public final class SystemPaths {
     }
 
     public static File getTemp() {
-        return new File(getAppStorage(), TEMP_PATH);
+        String path = Environment.getExternalStorageDirectory().getAbsolutePath();
+        File app =  new File(path, APP_STORAGE_PATH);
+        return new File(app, TEMP_PATH);
     }
 
     public static File getSaveDirectory(byte fileType) {

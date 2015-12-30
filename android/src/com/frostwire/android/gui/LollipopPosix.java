@@ -35,9 +35,9 @@ public final class LollipopPosix extends swig_posix_file_functions {
     private static final Logger LOG = Logger.getLogger(LollipopPosix.class);
 
     private final Context context;
-    private final FileSystem fs;
+    private final LollipopFileSystem fs;
 
-    public LollipopPosix(Context context, FileSystem fs) {
+    public LollipopPosix(Context context, LollipopFileSystem fs) {
         this.context = context;
         this.fs = fs;
     }
@@ -47,7 +47,7 @@ public final class LollipopPosix extends swig_posix_file_functions {
         LOG.info("open: " + pathname);
         File f = new File(pathname);
         try {
-            return LollipopFileSystem.openFD(context, f);
+            return fs.openFD(f);
         } catch (Throwable e) {
             LOG.error("Can't open file: " + pathname, e);
         }

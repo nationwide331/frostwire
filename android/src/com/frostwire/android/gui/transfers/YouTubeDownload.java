@@ -1,6 +1,6 @@
 /*
  * Created by Angel Leon (@gubatron), Alden Torres (aldenml)
- * Copyright (c) 2011-2015, FrostWire(R). All rights reserved.
+ * Copyright (c) 2011-2016, FrostWire(R). All rights reserved.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,23 +18,28 @@
 
 package com.frostwire.android.gui.transfers;
 
-import android.util.Log;
 import com.frostwire.android.R;
 import com.frostwire.android.core.SystemPaths;
 import com.frostwire.android.gui.Librarian;
+import com.frostwire.android.gui.LollipopFileSystem;
+import com.frostwire.android.gui.MainApplication;
 import com.frostwire.android.gui.services.Engine;
-import com.frostwire.search.youtube.YouTubeExtractor.LinkInfo;
+import com.frostwire.logging.Logger;
 import com.frostwire.search.youtube.YouTubeCrawledSearchResult;
+import com.frostwire.search.youtube.YouTubeExtractor.LinkInfo;
 import com.frostwire.transfers.TransferItem;
-import com.frostwire.util.http.HttpClient;
-import com.frostwire.util.http.HttpClient.HttpClientListener;
 import com.frostwire.util.HttpClientFactory;
 import com.frostwire.util.MP4Muxer;
 import com.frostwire.util.MP4Muxer.MP4Metadata;
+import com.frostwire.util.http.HttpClient;
+import com.frostwire.util.http.HttpClient.HttpClientListener;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.io.IOUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -43,11 +48,10 @@ import java.util.Map;
 /**
  * @author gubatron
  * @author aldenml
- *
  */
 public final class YouTubeDownload implements DownloadTransfer {
 
-    private static final String TAG = "FW.HttpDownload";
+    private static final Logger LOG = Logger.getLogger(YouTubeDownload.class);
 
     private static final int STATUS_DOWNLOADING = 1;
     private static final int STATUS_COMPLETE = 2;
@@ -81,6 +85,8 @@ public final class YouTubeDownload implements DownloadTransfer {
     private long speedMarkTimestamp;
     private long totalReceivedSinceLastSpeedStamp;
 
+    private final boolean moveToSD;
+
     YouTubeDownload(TransferManager manager, YouTubeCrawledSearchResult sr) {
         this.manager = manager;
         this.sr = sr;
@@ -89,7 +95,17 @@ public final class YouTubeDownload implements DownloadTransfer {
 
         String filename = sr.getFilename();
 
+        if (MainApplication.FILE_SYSTEM instanceof LollipopFileSystem) {
+            LollipopFileSystem fs = (LollipopFileSystem) MainApplication.FILE_SYSTEM;
+            moveToSD = fs.getDocumentUri(SystemPaths.getTorrentData()) != null;
+        } else {
+            moveToSD = false;
+        }
+
         File savePath = SystemPaths.getTorrentData();
+        if (moveToSD) {
+            savePath = SystemPaths.getTemp();
+        }
 
         ensureDirectoryExits(savePath);
         ensureDirectoryExits(SystemPaths.getTemp());
@@ -331,6 +347,21 @@ public final class YouTubeDownload implements DownloadTransfer {
         status = STATUS_COMPLETE;
         manager.incrementDownloadsToReview();
 
+        if (moveToSD && completeFile.exists()) {
+            try {
+                File finalFile = new File(SystemPaths.getTorrentData(), completeFile.getName());
+                OutputStream s = MainApplication.FILE_SYSTEM.openWrite(finalFile);
+                FileUtils.copyFile(completeFile, s);
+                IOUtils.closeQuietly(s);
+                Engine.instance().notifyDownloadFinished(getDisplayName(), finalFile);
+                cleanupIncomplete();
+                cleanupComplete();
+                return;
+            } catch (Throwable e) {
+                LOG.error("Error moving final file to external SD", e);
+            }
+        }
+
         if (completeFile.getAbsoluteFile().exists()) {
             Librarian.instance().scan(getSavePath().getAbsoluteFile());
             String sha1 = Digests.sha1(completeFile);
@@ -345,14 +376,14 @@ public final class YouTubeDownload implements DownloadTransfer {
     private void error(Throwable e) {
         if (status != STATUS_CANCELLED) {
             if (e != null) {
-                Log.e(TAG, String.format("Error downloading url: %s", sr.getDownloadUrl()), e);
+                LOG.error(String.format("Error downloading url: %s", sr.getDownloadUrl()), e);
             } else {
-                Log.e(TAG, String.format("Error downloading url: %s", sr.getDownloadUrl()));
+                LOG.error(String.format("Error downloading url: %s", sr.getDownloadUrl()));
             }
 
             status = STATUS_ERROR;
 
-            if (e.getMessage() !=null && e.getMessage().contains("No space left on device")) {
+            if (e.getMessage() != null && e.getMessage().contains("No space left on device")) {
                 status = STATUS_ERROR_DISK_FULL;
             }
 
@@ -379,7 +410,7 @@ public final class YouTubeDownload implements DownloadTransfer {
     }
 
     private final class HttpDownloadListenerImpl implements HttpClientListener {
-        @Override   
+        @Override
         public void onError(HttpClient client, Throwable e) {
             error(e);
         }
@@ -451,7 +482,7 @@ public final class YouTubeDownload implements DownloadTransfer {
 
         @Override
         public void onHeaders(HttpClient httpClient, Map<String, List<String>> headerFields) {
-            
+
         }
     }
 
@@ -478,7 +509,7 @@ public final class YouTubeDownload implements DownloadTransfer {
         if (!(obj instanceof YouTubeDownload)) {
             return false;
         }
-        
+
         return sr.getFilename().equals(((YouTubeDownload) obj).sr.getFilename());
     }
 
@@ -486,7 +517,7 @@ public final class YouTubeDownload implements DownloadTransfer {
         String title = sr.getDisplayName();
         String author = sr.getSource();
         String source = "YouTube.com";
-        
+
         if (author != null && author.startsWith("YouTube - ")) {
             author = author.replace("YouTube - ", "") + " (YouTube)";
         } else {

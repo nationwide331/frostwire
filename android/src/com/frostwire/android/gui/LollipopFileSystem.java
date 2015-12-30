@@ -179,7 +179,7 @@ public final class LollipopFileSystem implements FileSystem {
         }
     }
 
-    public static int openFD(Context context, File file) throws IOException {
+    public int openFD(File file) throws IOException {
         File parent = file.getParentFile();
         if (parent == null) {
             throw new IOException("Can't create file: " + file);
@@ -206,6 +206,10 @@ public final class LollipopFileSystem implements FileSystem {
             ParcelFileDescriptor fd = ParcelFileDescriptor.open(file, ParcelFileDescriptor.MODE_CREATE | ParcelFileDescriptor.MODE_READ_WRITE);
             return fd.detachFd();
         }
+    }
+
+    public Uri getDocumentUri(File file) {
+        return getDocumentUri(context, file);
     }
 
     private static Uri getDocumentUri(Context context, File file) {
