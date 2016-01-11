@@ -1,5 +1,8 @@
 package com.frostwire.mp3;
 
+import com.frostwire.util.FileSystem;
+
+import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.util.HashMap;
@@ -34,8 +37,7 @@ public class Mp3File extends FileWrapper {
     private byte[] customTag;
     private boolean scanFile;
 
-    protected Mp3File() {
-    }
+    private FileSystem fileSystem;
 
     public Mp3File(String filename) throws IOException, UnsupportedTagException, InvalidDataException {
         this(filename, DEFAULT_BUFFER_LENGTH, true);
@@ -50,6 +52,10 @@ public class Mp3File extends FileWrapper {
     }
 
     public Mp3File(String filename, int bufferLength, boolean scanFile) throws IOException, UnsupportedTagException, InvalidDataException {
+        this(filename, bufferLength, scanFile, FileSystem.DEFAULT);
+    }
+
+    public Mp3File(String filename, int bufferLength, boolean scanFile, FileSystem fs) throws IOException, UnsupportedTagException, InvalidDataException {
         super(filename);
         if (bufferLength < MINIMUM_BUFFER_LENGTH + 1) throw new IllegalArgumentException("Buffer too small");
         this.bufferLength = bufferLength;
@@ -58,7 +64,7 @@ public class Mp3File extends FileWrapper {
     }
 
     private void init() throws IOException, UnsupportedTagException, InvalidDataException {
-        RandomAccessFile file = new RandomAccessFile(filename, "r");
+        RandomAccessFile file = fileSystem.openRandom(new File(filename), "r");
         try {
             initId3v1Tag(file);
             scanFile(file);
@@ -394,7 +400,7 @@ public class Mp3File extends FileWrapper {
         if (filename.compareToIgnoreCase(newFilename) == 0) {
             throw new IllegalArgumentException("Save filename same as source filename");
         }
-        RandomAccessFile saveFile = new RandomAccessFile(newFilename, "rw");
+        RandomAccessFile saveFile = fileSystem.openRandom(new File(newFilename), "rw");
         try {
             if (hasId3v2Tag()) {
                 saveFile.write(id3v2Tag.toBytes());
@@ -416,7 +422,7 @@ public class Mp3File extends FileWrapper {
         if (filePos < 0) filePos = startOffset;
         if (filePos < 0) return;
         if (endOffset < filePos) return;
-        RandomAccessFile file = new RandomAccessFile(filename, "r");
+        RandomAccessFile file = fileSystem.openRandom(new File(filename), "r");
         byte[] bytes = new byte[bufferLength];
         try {
             file.seek(filePos);
