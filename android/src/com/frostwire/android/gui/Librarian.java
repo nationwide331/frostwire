@@ -1,6 +1,6 @@
 /*
  * Created by Angel Leon (@gubatron), Alden Torres (aldenml)
- * Copyright (c) 2011-2015, FrostWire(R). All rights reserved.
+ * Copyright (c) 2011-2016, FrostWire(R). All rights reserved.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,12 +24,14 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
-import android.os.Build;
 import android.provider.BaseColumns;
 import android.provider.MediaStore.MediaColumns;
 import android.util.Log;
 import com.andrew.apollo.utils.MusicUtils;
-import com.frostwire.android.core.*;
+import com.frostwire.android.core.Constants;
+import com.frostwire.android.core.FileDescriptor;
+import com.frostwire.android.core.MediaType;
+import com.frostwire.android.core.SystemPaths;
 import com.frostwire.android.core.player.EphemeralPlaylist;
 import com.frostwire.android.core.player.PlaylistItem;
 import com.frostwire.android.core.providers.TableFetcher;
@@ -37,6 +39,7 @@ import com.frostwire.android.core.providers.TableFetchers;
 import com.frostwire.android.gui.transfers.Transfers;
 import com.frostwire.android.util.SystemUtils;
 import com.frostwire.util.DirectoryUtils;
+import com.frostwire.util.FileSystem;
 import com.frostwire.util.StringUtils;
 import org.apache.commons.io.FilenameUtils;
 
@@ -63,6 +66,8 @@ public final class Librarian {
     private final FileCountCache[] cache; // it is an array for performance reasons
 
     private static Librarian instance;
+
+    public static FileSystem FILE_SYSTEM = FileSystem.DEFAULT;
 
     public synchronized static void create(Application context) {
         if (instance != null) {

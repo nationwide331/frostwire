@@ -43,6 +43,10 @@ public class Mp3File extends FileWrapper {
         this(filename, DEFAULT_BUFFER_LENGTH, true);
     }
 
+    public Mp3File(String filename, FileSystem fs) throws IOException, UnsupportedTagException, InvalidDataException {
+        this(filename, DEFAULT_BUFFER_LENGTH, true, fs);
+    }
+
     public Mp3File(String filename, int bufferLength) throws IOException, UnsupportedTagException, InvalidDataException {
         this(filename, bufferLength, true);
     }

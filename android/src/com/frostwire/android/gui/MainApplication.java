@@ -1,6 +1,6 @@
 /*
  * Created by Angel Leon (@gubatron), Alden Torres (aldenml)
- * Copyright (c) 2011-2015, FrostWire(R). All rights reserved.
+ * Copyright (c) 2011-2016, FrostWire(R). All rights reserved.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -110,7 +110,7 @@ public class MainApplication extends Application {
         BTEngine.getInstance().reloadBTContext(SystemPaths.getTorrents(),
                 SystemPaths.getTorrentData(),
                 SystemPaths.getLibTorrent(this),
-                0,0,"0.0.0.0",false,false);
+                0, 0, "0.0.0.0", false, false);
         BTEngine.ctx.optimizeMemory = true;
         BTEngine.getInstance().start();
 

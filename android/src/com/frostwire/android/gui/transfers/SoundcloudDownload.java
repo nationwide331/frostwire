@@ -1,6 +1,6 @@
 /*
  * Created by Angel Leon (@gubatron), Alden Torres (aldenml)
- * Copyright (c) 2011-2015, FrostWire(R). All rights reserved.
+ * Copyright (c) 2011-2016, FrostWire(R). All rights reserved.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,16 +18,10 @@
 
 package com.frostwire.android.gui.transfers;
 
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
-
 import android.util.Log;
-
 import com.frostwire.android.core.Constants;
 import com.frostwire.android.core.SystemPaths;
+import com.frostwire.android.gui.Librarian;
 import com.frostwire.android.gui.services.Engine;
 import com.frostwire.mp3.ID3Wrapper;
 import com.frostwire.mp3.ID3v1Tag;
@@ -36,10 +30,15 @@ import com.frostwire.mp3.Mp3File;
 import com.frostwire.search.soundcloud.SoundcloudSearchResult;
 import com.frostwire.transfers.TransferItem;
 
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.util.Collections;
+import java.util.Date;
+import java.util.List;
+
 /**
  * @author gubatron
  * @author aldenml
- * 
  */
 public class SoundcloudDownload extends TemporaryDownloadTransfer<SoundcloudSearchResult> {
 
@@ -218,7 +217,7 @@ public class SoundcloudDownload extends TemporaryDownloadTransfer<SoundcloudSear
 
     private boolean setAlbumArt(byte[] imageBytes, String mp3Filename, String mp3outputFilename) {
         try {
-            Mp3File mp3 = new Mp3File(mp3Filename);
+            Mp3File mp3 = new Mp3File(mp3Filename, Librarian.FILE_SYSTEM);
 
             ID3Wrapper newId3Wrapper = new ID3Wrapper(new ID3v1Tag(), new ID3v23Tag());
             newId3Wrapper.setAlbum(sr.getUsername() + ": " + sr.getDisplayName() + " via SoundCloud.com");
