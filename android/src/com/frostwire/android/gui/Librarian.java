@@ -87,7 +87,7 @@ public final class Librarian {
         this.context = context;
         this.cache = new FileCountCache[]{new FileCountCache(), new FileCountCache(), new FileCountCache(), new FileCountCache(), new FileCountCache(), new FileCountCache(), new FileCountCache()};
 
-        FILE_SYSTEM = new LollipopFileSystem();
+        FILE_SYSTEM = new LollipopFileSystem(context);
     }
 
     public List<FileDescriptor> getFiles(byte fileType, int offset, int pageSize) {
@@ -402,7 +402,7 @@ public final class Librarian {
      * it will NOT have a `filePath` attribute set (null), also the `fileType` field will be set to
      * Constants.FILE_TYPE_DOCUMENTS, which can throw things off if the given URI is not as expected
      * even though the file may be a media file.
-     * <p/>
+     * <p>
      * This method will use the given URI on the generic content resolver to find the disk file path,
      * update the fileDescriptor.filePath field, and then with the extension it will try to determine
      * the closest fileType (byte) associated.
