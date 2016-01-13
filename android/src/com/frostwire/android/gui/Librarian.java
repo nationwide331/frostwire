@@ -86,6 +86,8 @@ public final class Librarian {
     private Librarian(Application context) {
         this.context = context;
         this.cache = new FileCountCache[]{new FileCountCache(), new FileCountCache(), new FileCountCache(), new FileCountCache(), new FileCountCache(), new FileCountCache(), new FileCountCache()};
+
+        FILE_SYSTEM = new LollipopFileSystem();
     }
 
     public List<FileDescriptor> getFiles(byte fileType, int offset, int pageSize) {
