@@ -28,10 +28,9 @@ import android.support.v4.provider.DocumentFile;
 import com.frostwire.logging.Logger;
 import com.frostwire.util.FileSystem;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.RandomAccessFile;
+import java.io.*;
 import java.lang.reflect.Array;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
@@ -52,7 +51,7 @@ public final class LollipopFileSystem implements FileSystem {
 
     @Override
     public RandomAccessFile openRandom(File file, String mode) throws IOException {
-        return null;
+        return new LollipopRandomAccessFile(context, file, mode);
     }
 
     private static ParcelFileDescriptor openFD(Context context, File file, String mode) throws IOException {
@@ -329,5 +328,38 @@ public final class LollipopFileSystem implements FileSystem {
             return paths.get(1);
         }
         throw new IllegalArgumentException("Invalid URI: " + documentUri);
+    }
+
+    private static class LollipopRandomAccessFile extends RandomAccessFile {
+
+        public LollipopRandomAccessFile(Context context, File file, String mode) throws IOException {
+            super(File.createTempFile("lollipoprandom", null), mode);
+
+            FileDescriptor oldfd = getFD();
+            close(oldfd);
+            FileDescriptor newfd = openFD(context, file, mode).getFileDescriptor();
+            setFD(newfd);
+        }
+
+        private void setFD(FileDescriptor fd) throws IOException {
+            try {
+                Field f = RandomAccessFile.class.getField("fd");
+                f.setAccessible(true);
+                f.set(this, fd);
+            } catch (Throwable e) {
+                throw new IOException("Unable to set internal fd", e);
+            }
+        }
+
+        private void close(FileDescriptor fd) throws IOException {
+            try {
+                Class<?> c = Class.forName("libcore.io.IoUtils");
+                Method m = c.getDeclaredMethod("close", FileDescriptor.class);
+                m.setAccessible(true);
+                m.invoke(null, fd);
+            } catch (Throwable e) {
+                throw new IOException("Unable to close fd", e);
+            }
+        }
     }
 }
